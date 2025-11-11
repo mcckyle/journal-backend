@@ -1,3 +1,4 @@
+![Build Status](https://github.com/kmccol1/journal-backend/actions/workflows/journal-tests-ci.yml/badge.svg)
 
 # Gratitude Journal Backend
 
@@ -21,7 +22,7 @@ The Gratitude Journal backend is a RESTful web service built with **Java Spring 
 
 ### Prerequisites
 - Java 11 or higher
-- Maven 3.6 or higher
+- Gradle 6.0 or higher
 - MariaDB server (or any other compatible relational database)
 - Postman or another API testing tool (optional)
 
@@ -50,10 +51,10 @@ spring.jpa.hibernate.ddl-auto=update
 ```
 
 ### Run the Application
-You can run the Spring Boot application using Maven:
+You can run the Spring Boot application using Gradle:
 
 ```bash
-mvn spring-boot:run
+./gradlew bootRun
 ```
 
 The backend will start running on `http://localhost:8080` by default.
@@ -92,10 +93,10 @@ To test the endpoints, you can use Postman or any API testing tool. The followin
 ```
 
 ## Running Unit Tests
-The project includes unit and integration tests to ensure functionality. You can run tests using:
+The project includes unit and integration tests to ensure functionality. You can run tests using Gradle:
 
 ```bash
-mvn test
+./gradlew test
 ```
 
 ## Deployment
@@ -107,7 +108,7 @@ For production deployment, you can package the backend application as a Docker c
 
 ```dockerfile
 FROM openjdk:11-jre-slim
-COPY target/gratitude-journal-backend.jar /app/gratitude-journal-backend.jar
+COPY build/libs/gratitude-journal-backend.jar /app/gratitude-journal-backend.jar
 ENTRYPOINT ["java", "-jar", "/app/gratitude-journal-backend.jar"]
 ```
 
