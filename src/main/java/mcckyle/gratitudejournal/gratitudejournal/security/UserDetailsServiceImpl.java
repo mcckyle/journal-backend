@@ -2,7 +2,7 @@
 //
 //     Filename: UserDetailsServiceImpl.java
 //     Author: Kyle McColgan
-//     Date: 03 December 2024
+//     Date: 14 November 2025
 //     Description: This file contains database functionality for users.
 //
 //***************************************************************************************
@@ -37,8 +37,26 @@ public class UserDetailsServiceImpl implements UserDetailsService
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
     {
-        User user = userRetrievalHelper.loadUserByUsername(username);
+        User user = userRetrievalHelper.findByUsername(username)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("User not found with username" + username));
 
+        return buildUserDetails(user);
+    }
+
+    public UserDetails loadUserById(Integer id) throws UsernameNotFoundException
+    {
+        User user = userRetrievalHelper.loadUserById(id);
+
+        if (user == null)
+        {
+            throw new UsernameNotFoundException("User not found with ID: " + id);
+        }
+        return buildUserDetails(user);
+    }
+
+    private UserDetails buildUserDetails(User user)
+    {
         Set<GrantedAuthority> authorities = user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toSet());
@@ -48,6 +66,7 @@ public class UserDetailsServiceImpl implements UserDetailsService
                 user.getUsername(),
                 user.getEmail(),
                 user.getPassword(),
+                user.getBio(),
                 authorities
         );
     }

@@ -2,7 +2,7 @@
 //
 //     Filename: SecurityFilterChainConfig.java
 //     Author: Kyle McColgan
-//     Date: 03 December 2024
+//     Date: 14 November 2025
 //     Description: This file implements a custom Security FilterChain configuration.
 //
 //***************************************************************************************

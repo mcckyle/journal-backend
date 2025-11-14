@@ -2,7 +2,7 @@
 //
 //     Filename: JwtUtils.java
 //     Author: Kyle McColgan
-//     Date: 04 December 2024
+//     Date: 14 November 2025
 //     Description: This file contains the auth token generation process.
 //
 //***************************************************************************************
@@ -37,8 +37,8 @@ public class JwtUtils
                 .collect(Collectors.joining(","));
 
         return Jwts.builder()
-                .setSubject(username)
-                .claim("userId", userId)  // Include userId in the JWT
+                .setSubject(String.valueOf(userId))
+                .claim("username", username)  // Include userId in the JWT
                 .claim("roles", roles)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
@@ -73,6 +73,27 @@ public class JwtUtils
             System.out.println("Invalid JWT token: " + e.getMessage());
         }
         return null;
+    }
+
+    public Integer getUserIdFromJwtToken(String token)
+    {
+        Claims claims = getClaimsFromToken(token);
+
+        if (claims == null)
+        {
+            return null;
+        }
+
+        String sub = claims.getSubject();
+
+        try
+        {
+            return Integer.valueOf(sub);
+        }
+        catch (NumberFormatException e)
+        {
+            return null;
+        }
     }
 
     public String getUserNameFromJwtToken(String token)

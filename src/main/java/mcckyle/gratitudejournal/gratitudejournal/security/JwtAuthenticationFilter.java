@@ -2,7 +2,7 @@
 //
 //     Filename: JwtAuthenticationFilter.java
 //     Author: Kyle McColgan
-//     Date: 03 December 2024
+//     Date: 14 November 2025
 //     Description: This file provides the auth token validation implementation.
 //
 //***************************************************************************************
@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
@@ -31,10 +30,10 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter
 {
     private final JwtUtils jwtUtils;
-    private final UserDetailsService userDetailsService; // Change to UserDetailsService
+    private final UserDetailsServiceImpl userDetailsService; // Change to UserDetailsService
 
     @Autowired
-    public JwtAuthenticationFilter(JwtUtils jwtUtils, UserDetailsService userDetailsService)
+    public JwtAuthenticationFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService)
     {
         this.jwtUtils = jwtUtils;
         this.userDetailsService = userDetailsService; // Inject UserDetailsServiceImpl bean
@@ -52,13 +51,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
 
             if (jwtUtils.validateJwtToken(jwt))
             {
-                String username = jwtUtils.getUserNameFromJwtToken(jwt);
-                System.out.println("Token validated, user: " + username);
+                Integer userId = jwtUtils.getUserIdFromJwtToken(jwt);
+                System.out.println("Token validated, userId: " + userId);
 
-                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null)
+                if ( (userId != null) && ( SecurityContextHolder.getContext().getAuthentication() == null) )
                 {
                     // Use UserDetailsService to load user details
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    UserDetails userDetails = userDetailsService.loadUserById(userId);
 
                     // Create authentication token and set it in the context
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

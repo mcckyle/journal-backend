@@ -2,8 +2,8 @@
 //
 //     Filename: CalendarEntryController.java
 //     Author: Kyle McColgan
-//     Date: 05 December 2024
-//     Description: This controller class provides CalendarEntry class functionality.
+//     Date: 12 November 2025
+//     Description: This controller class provides CalendarEntry functionality.
 //
 //***************************************************************************************
 
@@ -92,20 +92,20 @@ public class CalendarEntryController
 
     // DELETE a calendar entry by ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEntry(@PathVariable Integer entryId)
+    public ResponseEntity<Void> deleteEntry(@PathVariable("id") Integer entryId)
     {
         try
         {
-            calendarService.deleteEntry(entryId);  // Try to delete the entry
-            return ResponseEntity.noContent().build();  // Return 204 No Content if successful
+            calendarService.deleteEntry(entryId);  // Try to delete the entry.
+            return ResponseEntity.noContent().build();  // Return 204 No Content if successful.
         }
         catch (ResponseStatusException e)
         {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND)
             {
-                return ResponseEntity.notFound().build();  // Return 404 if entry not found
+                return ResponseEntity.notFound().build();  // Return 404 if entry not found.
             }
-            throw e;  // Rethrow any other unexpected exceptions
+            throw e;  // Rethrow any other unexpected exceptions.
         }
     }
 }

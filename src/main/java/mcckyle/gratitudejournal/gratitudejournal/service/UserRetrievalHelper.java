@@ -2,7 +2,7 @@
 //
 //     Filename: UserRetreivalHelper.java
 //     Author: Kyle McColgan
-//     Date: 02 December 2024
+//     Date: 14 November 2025
 //     Description: This file provides database interaction for loading users.
 //
 //***************************************************************************************
@@ -28,9 +28,9 @@ public class UserRetrievalHelper
         this.userRepository = userRepository;
     }
 
-    public User loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+    public User loadUserById(Integer id) throws UsernameNotFoundException {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + id));
     }
 
     public Optional<User> findByUsername(String username) {

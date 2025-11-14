@@ -2,8 +2,8 @@
 //
 //     Filename: GratitudeJournalApplicationTests.java
 //     Author: Kyle McColgan
-//     Date: 05 December 2024
-//     Description: This file contains unit tests for the back end.
+//     Date: 11 November 2025
+//     Description: This file contains unit tests for the gratitude journal back end.
 //
 //***************************************************************************************
 
@@ -70,7 +70,7 @@ class GratitudeJournalApplicationTests
 	void testFindEntryById()
 	{
 		// Arrange: mock the repository to return an Optional with a sample entry
-		when(repository.findByUserIdAndEntryId(1, 101)).thenReturn(Optional.of(sampleEntry));
+		when(repository.findByUserIdAndId(1, 101)).thenReturn(Optional.of(sampleEntry));
 
 		// Act: call the service method that now takes both userId and entryId as parameters
 		Optional<CalendarEntry> result = service.getEntryById(1, 101);
@@ -80,7 +80,7 @@ class GratitudeJournalApplicationTests
 		assertThat(result.get().getTitle()).isEqualTo("Sample Title"); // Assert the title of the found entry
 
 		// Verify: check if the repository's findByUserIdAndEntryId method was called with the correct arguments
-		verify(repository).findByUserIdAndEntryId(1, 101);
+		verify(repository).findByUserIdAndId(1, 101);
 	}
 
 	// Test 3: Service - Save new entry
@@ -140,7 +140,7 @@ class GratitudeJournalApplicationTests
 	void testEntryNotFound()
 	{
 		// Arrange: Mock the repository to return an empty Optional when looking for a non-existent entry
-		when(repository.findByUserIdAndEntryId(2, 999)).thenReturn(Optional.empty());
+		when(repository.findByUserIdAndId(2, 999)).thenReturn(Optional.empty());
 
 		// Act: Call the service method to get the entry by user ID and entry ID
 		Optional<CalendarEntry> result = service.getEntryById(2, 999); // Pass both userId and entryId
@@ -149,7 +149,7 @@ class GratitudeJournalApplicationTests
 		assertThat(result).isEmpty();
 
 		// Verify: Ensure the repository method was called with the correct parameters
-		verify(repository).findByUserIdAndEntryId(2, 999);
+		verify(repository).findByUserIdAndId(2, 999);
 	}
 
 	// Test 8: test find ID
@@ -157,13 +157,13 @@ class GratitudeJournalApplicationTests
 	void testFindID()
 	{
 		// Arrange: Simulate that no entry exists with userId = 2 and entryId = 999
-		when(repository.findByUserIdAndEntryId(2, 999)).thenReturn(Optional.empty());
+		when(repository.findByUserIdAndId(2, 999)).thenReturn(Optional.empty());
 
 		// Act: Call the service method to get an entry by userId and entryId
 		Optional<CalendarEntry> result = service.getEntryById(2, 999);  // Pass both userId and entryId
 
 		// Verify: Ensure the repository's findByUserIdAndEntryId was called
-		verify(repository).findByUserIdAndEntryId(2, 999);
+		verify(repository).findByUserIdAndId(2, 999);
 
 		// Assert: Verify the result is empty, as no entry should be found
 		assertThat(result).isEmpty();

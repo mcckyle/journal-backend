@@ -2,7 +2,7 @@
 //
 //     Filename: UserDetailsImpl.java
 //     Author: Kyle McColgan
-//     Date: 03 December 2024
+//     Date: 12 November 2025
 //     Description: This file contains functionality related to user accounts.
 //
 //***************************************************************************************
@@ -25,15 +25,17 @@ public class UserDetailsImpl implements UserDetails
     private String username;
     private String email;
     private String password;
+    private String bio;
     private Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(Integer id, String username, String email, String password,
+    public UserDetailsImpl(Integer id, String username, String email, String password, String bio,
                            Collection<? extends GrantedAuthority> authorities)
     {
         this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
+        this.bio = bio;
         this.authorities = authorities;
     }
 
@@ -49,6 +51,7 @@ public class UserDetailsImpl implements UserDetails
                 user.getUsername(),
                 user.getEmail(),
                 user.getPassword(),
+                user.getBio(),
                 authorities
         );
     }
@@ -73,6 +76,10 @@ public class UserDetailsImpl implements UserDetails
     public String getEmail()
     {
         return email;
+    }
+
+    public String getBio() {
+        return bio;
     }
 
     @Override

@@ -2,7 +2,7 @@
 //
 //     Filename: UserService.java
 //     Author: Kyle McColgan
-//     Date: 03 December 2024
+//     Date: 14 November 2025
 //     Description: This file provides abstracted registration functionality.
 //
 //***************************************************************************************
@@ -80,6 +80,11 @@ public class UserService implements UserRetrievalService
     public Optional<User> findByUsername(String username)
     {
         return userRepository.findByUsername(username);
+    }
+    
+    public Optional<User> findById(Integer id)
+    {
+        return userRepository.findById(id);
     }
 
     @Transactional

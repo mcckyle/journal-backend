@@ -2,7 +2,7 @@
 //
 //     Filename: User.java
 //     Author: Kyle McColgan
-//     Date: 04 December 2024
+//     Date: 12 November 2025
 //     Description: This file stores information related to the user.
 //
 //***************************************************************************************
@@ -31,6 +31,9 @@ public class User
     private String password;
 
     private String email;
+
+    @Column(length = 500)
+    private String bio;
 
     @ManyToMany(fetch = FetchType.EAGER) //EAGER or LAZY gives errors...
     @JoinTable(
@@ -92,9 +95,22 @@ public class User
         this.email = email;
     }
 
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
     public Integer getId()
     {
         return id;
+    }
+
+    public void setId(Integer id)
+    {
+        this.id = id;
     }
 
     public Set<Role> getRoles()
@@ -105,11 +121,6 @@ public class User
     public void setRoles(Set<Role> roles)
     {
         this.roles = roles;
-    }
-
-    public void setId(Integer id)
-    {
-        this.id = id;
     }
 
     @Override
