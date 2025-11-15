@@ -2,13 +2,14 @@
 //
 //     Filename: CalendarEntryController.java
 //     Author: Kyle McColgan
-//     Date: 12 November 2025
+//     Date: 14 November 2025
 //     Description: This controller class provides CalendarEntry functionality.
 //
 //***************************************************************************************
 
 package mcckyle.gratitudejournal.gratitudejournal.controller;
 
+import mcckyle.gratitudejournal.gratitudejournal.dto.CalendarEntryDTO;
 import mcckyle.gratitudejournal.gratitudejournal.model.CalendarEntry;
 import mcckyle.gratitudejournal.gratitudejournal.service.CalendarService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,10 +70,12 @@ public class CalendarEntryController
 
     // POST (create) a new calendar entry
     @PostMapping
-    public ResponseEntity<CalendarEntry> createEntry(@RequestBody CalendarEntry entry)
+    public ResponseEntity<CalendarEntry> createEntry(@RequestBody CalendarEntryDTO dto)
     {
         try
         {
+            LocalDate date = LocalDate.parse(dto.entryDate); //Convert the String to LocalDate.
+            CalendarEntry entry = new CalendarEntry(dto.title, dto.content, date, dto.userId);
             CalendarEntry createdEntry = calendarService.createEntry(entry);
             return new ResponseEntity<>(createdEntry, HttpStatus.CREATED);
         }
@@ -84,10 +88,20 @@ public class CalendarEntryController
 
     // PUT (update) an existing calendar entry
     @PutMapping("/{id}")
-    public ResponseEntity<CalendarEntry> updateEntry(@PathVariable Integer id, @RequestBody CalendarEntry entry)
+    public ResponseEntity<CalendarEntry> updateEntry(@PathVariable Integer id, @RequestBody CalendarEntryDTO dto)
     {
-        CalendarEntry updatedEntry = calendarService.updateEntry(id, entry);
-        return updatedEntry != null ? ResponseEntity.ok(updatedEntry) : ResponseEntity.notFound().build();
+        try
+        {
+            LocalDate date = LocalDate.parse(dto.entryDate); //Convert the String to LocalDate.
+            CalendarEntry entry = new CalendarEntry(dto.title, dto.content, date, dto.userId);
+            CalendarEntry updatedEntry = calendarService.updateEntry(id, entry);
+            return updatedEntry != null ? ResponseEntity.ok(updatedEntry) : ResponseEntity.notFound().build();
+        }
+        catch (RuntimeException e)
+        {
+            // Handle unexpected error
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     // DELETE a calendar entry by ID

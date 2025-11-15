@@ -2,13 +2,14 @@
 //
 //     Filename: CalendarEntry.java
 //     Author: Kyle McColgan
-//     Date: 04 December 2024
+//     Date: 14 November 2025
 //     Description: This file contains the CalendarEntry object structure.
 //
 //***************************************************************************************
 
 package mcckyle.gratitudejournal.gratitudejournal.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.*;
@@ -35,6 +36,7 @@ public class CalendarEntry
     private String content;
 
     @NotNull(message = "Entry date is required")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate entryDate;
 
     @NotNull(message = "User ID is required")

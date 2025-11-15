@@ -81,7 +81,7 @@ public class UserService implements UserRetrievalService
     {
         return userRepository.findByUsername(username);
     }
-    
+
     public Optional<User> findById(Integer id)
     {
         return userRepository.findById(id);
