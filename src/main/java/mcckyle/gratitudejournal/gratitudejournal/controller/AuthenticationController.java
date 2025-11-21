@@ -2,7 +2,7 @@
 //
 //   Filename: AuthenticationController.java
 //   Author: Kyle McColgan
-//   Date: 14 November 2025
+//   Date: 21 November 2025
 //   Description: This file provides register and login functionality.
 //
 //***************************************************************************************
@@ -165,6 +165,54 @@ public class AuthenticationController
         userData.put("roles", userDetails.getAuthorities());
 
         return ResponseEntity.ok(userData);
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(Authentication authentication, @RequestBody Map<String, String> request)
+    {
+        try
+        {
+            if ( (authentication == null) || ( ! authentication.isAuthenticated()) )
+            {
+                return ResponseEntity.status(401).body("Unauthorized");
+            }
+
+            String newPassword = request.get("newPassword");
+            if ( (newPassword == null) || (newPassword.isBlank()) )
+            {
+                return ResponseEntity.badRequest().body(Map.of("error", "Password cannot be empty."));
+            }
+
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            userService.updatePassword(userDetails.getId(), newPassword);
+
+            return ResponseEntity.ok(Map.of("message", "Password updated successfully!"));
+        }
+        catch (Exception e)
+        {
+            return ResponseEntity.status(500).body(Map.of("error", "Server error: " + e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/delete-account")
+    public ResponseEntity<?> deleteAccount(Authentication authentication)
+    {
+        try
+        {
+            if ( (authentication == null) || ( ! authentication.isAuthenticated()) )
+            {
+                return ResponseEntity.status(401).body("Unauthorized");
+            }
+
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            userService.deleteUserAccount(userDetails.getId());
+
+            return ResponseEntity.ok(Map.of("message", "Account deleted successfully."));
+        }
+        catch (Exception e)
+        {
+            return ResponseEntity.status(500).body(Map.of("error", "Server error: " + e.getMessage()));
+        }
     }
 }
 

@@ -2,7 +2,7 @@
 //
 //     Filename: UserService.java
 //     Author: Kyle McColgan
-//     Date: 14 November 2025
+//     Date: 21 November 2025
 //     Description: This file provides abstracted registration functionality.
 //
 //***************************************************************************************
@@ -104,5 +104,27 @@ public class UserService implements UserRetrievalService
     {
         return userRepository.existsById(userId);
     }
+
+    public void updatePassword(Integer userId, String newPassword)
+    {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found."));
+
+        String hashed = passwordEncoder.encode(newPassword);
+        user.setPassword(hashed);
+
+        userRepository.save(user);
+    }
+
+    public void deleteUserAccount(Integer userId)
+    {
+        if ( ! userRepository.existsById(userId))
+        {
+            throw new RuntimeException("User does not exist.");
+        }
+
+        userRepository.deleteById(userId);
+    }
 }
+
 //***************************************************************************************
