@@ -2,14 +2,15 @@
 //
 //     Filename: CalendarEntryControllerTests.java
 //     Author: Kyle McColgan
-//     Date: 05 December 2024
-//     Description: This file contains unit tests for the controller classes.
+//     Date: 21 November 2025
+//     Description: This file contains unit tests for the CalendarEntryController.
 //
 //***************************************************************************************
 
 package mcckyle.gratitudejournal.gratitudejournal;
 
 import mcckyle.gratitudejournal.gratitudejournal.controller.CalendarEntryController;
+import mcckyle.gratitudejournal.gratitudejournal.dto.CalendarEntryDTO;
 import mcckyle.gratitudejournal.gratitudejournal.model.CalendarEntry;
 import mcckyle.gratitudejournal.gratitudejournal.service.CalendarService;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,6 +56,16 @@ class CalendarEntryControllerTests
         sampleEntry.setUserId(123);
     }
 
+    private CalendarEntryDTO buildDTOFromEntry(CalendarEntry entry)
+    {
+        CalendarEntryDTO dto = new CalendarEntryDTO();
+        dto.title = entry.getTitle();
+        dto.content = entry.getContent();
+        dto.userId = entry.getUserId();
+        dto.entryDate = entry.getEntryDate().toString();
+        return dto;
+    }
+
     // Test 1: Controller - Get entries endpoint
     @Test
     void testControllerGetEntries()
@@ -84,9 +95,17 @@ class CalendarEntryControllerTests
 	@Test
 	void testControllerAddEntry()
 	{
-		when(service.createEntry(sampleEntry)).thenReturn(sampleEntry);
-		ResponseEntity<CalendarEntry> response = controller.createEntry(sampleEntry);
+        CalendarEntryDTO dto = buildDTOFromEntry(sampleEntry);
+
+        when(service.createEntry(any(CalendarEntry.class))).thenReturn(sampleEntry);
+
+		ResponseEntity<CalendarEntry> response = controller.createEntry(dto);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).isNotNull();
 		assertThat(response.getBody().getTitle()).isEqualTo("Sample Title");
+
+        verify(service).createEntry(any(CalendarEntry.class));
 	}
 
     //3. Controller - Get entry by ID
@@ -151,35 +170,21 @@ class CalendarEntryControllerTests
         verify(service).deleteEntry(101);
     }
 
-
     //6. Controller - Delete entry Not Found
     //Test if the controller returns the correct response when trying to delete a non-existent entry.
-//    @Test
-//    void testControllerDeleteEntryNotFound()
-//    {
-//        // Arrange: Mock the service to return false indicating the entry was not found
-//        when(service.deleteEntry(123, 101)).thenReturn(false);
-//
-//        // Act: Call the controller method to delete the entry
-//        ResponseEntity<Void> response = controller.deleteEntry(123, 101);
-//
-//        // Assert: Ensure the status is NOT_FOUND (404)
-//        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-//
-//        // Verify: Ensure the service was called with the correct userId and entryId
-//        verify(service).deleteEntry(123, 101);
-//    }
 
     //7. Controller - Update entry
     //Test if the controller correctly handles updating an entry.
     @Test
     void testControllerUpdateEntry()
     {
+        CalendarEntryDTO dto = buildDTOFromEntry(sampleEntry);
+
         // Arrange: Mock the service to return the updated entry
-        when(service.updateEntry(123, sampleEntry)).thenReturn(sampleEntry);
+        when(service.updateEntry(eq(123), any(CalendarEntry.class))).thenReturn(sampleEntry);
 
         // Act: Call the controller method to update the entry
-        ResponseEntity<CalendarEntry> response = controller.updateEntry(123, sampleEntry);
+        ResponseEntity<CalendarEntry> response = controller.updateEntry(123, dto);
 
         // Assert: Check that the response status is OK (200) and the body is the updated entry
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -187,7 +192,7 @@ class CalendarEntryControllerTests
         assertThat(response.getBody().getTitle()).isEqualTo(sampleEntry.getTitle());
 
         // Verify: Ensure the service was called with the correct parameters
-        verify(service).updateEntry(123, sampleEntry);
+        verify(service).updateEntry(eq(123), any(CalendarEntry.class));
     }
 
     //8. Controller - Update entry Not Found
@@ -195,49 +200,52 @@ class CalendarEntryControllerTests
     @Test
     void testControllerUpdateEntryNotFound()
     {
+        CalendarEntryDTO dto = buildDTOFromEntry(sampleEntry);
+
         // Arrange: Mock the service to return an empty Optional indicating the entry wasn't found
-        when(service.updateEntry(123, sampleEntry)).thenReturn(null);
+        when(service.updateEntry(eq(123), any(CalendarEntry.class))).thenReturn(null);
 
         // Act: Call the controller method
-        ResponseEntity<CalendarEntry> response = controller.updateEntry(123, sampleEntry);
+        ResponseEntity<CalendarEntry> response = controller.updateEntry(123, dto);
 
         // Assert: Ensure the status is NOT_FOUND (404)
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 
         // Verify: Ensure the service was called with the correct parameters
-        verify(service).updateEntry(123, sampleEntry);
+        verify(service).updateEntry(eq(123), any(CalendarEntry.class));
     }
 
     //9. Controller - Handle Bad Request
     //Test if the controller returns a BAD_REQUEST status when the input is invalid.
-//    @Test
-//    void testControllerBadRequest()
-//    {
-//        // Arrange: Simulate a bad request scenario by passing null as entry
-//        when(service.createEntry(null)).thenThrow(new IllegalArgumentException("Entry cannot be null"));
-//
-//        // Act: Call the controller method with invalid data (null entry)
-//        ResponseEntity<CalendarEntry> response = controller.createEntry(null);
-//
-//        // Assert: Ensure the status is BAD_REQUEST (400)
-//        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-//    }
+    @Test
+    void testControllerBadRequest()
+    {
+        // Act: Directly call the controller with null input.
+        ResponseEntity<CalendarEntry> response = controller.createEntry(null);
+
+        // Assert: Should return BAD_REQUEST (400).
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+        //Verify the service was never called.
+        verifyNoInteractions(service);
+    }
 
     //10. Controller - Handle Internal Server Error
     //Test if the controller returns an INTERNAL_SERVER_ERROR status when an unexpected exception occurs.
     @Test
     void testControllerInternalServerError()
     {
+        CalendarEntryDTO dto = buildDTOFromEntry(sampleEntry);
+
         // Arrange: Simulate an unexpected exception during service method execution
-        when(service.createEntry(sampleEntry)).thenThrow(new RuntimeException("Unexpected error"));
+        when(service.createEntry(any(CalendarEntry.class))).thenThrow(new RuntimeException("Unexpected error"));
 
         // Act: Call the controller method
-        ResponseEntity<CalendarEntry> response = controller.createEntry(sampleEntry);
+        ResponseEntity<CalendarEntry> response = controller.createEntry(dto);
 
         // Assert: Ensure the status is INTERNAL_SERVER_ERROR (500)
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
 }
 
 //***************************************************************************************

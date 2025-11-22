@@ -74,14 +74,23 @@ public class CalendarEntryController
     {
         try
         {
+            if(dto == null)
+            {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+
             LocalDate date = LocalDate.parse(dto.entryDate); //Convert the String to LocalDate.
             CalendarEntry entry = new CalendarEntry(dto.title, dto.content, date, dto.userId);
             CalendarEntry createdEntry = calendarService.createEntry(entry);
+
             return new ResponseEntity<>(createdEntry, HttpStatus.CREATED);
+        }
+        catch (IllegalArgumentException e)
+        {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         catch (RuntimeException e)
         {
-            // Handle unexpected error
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
