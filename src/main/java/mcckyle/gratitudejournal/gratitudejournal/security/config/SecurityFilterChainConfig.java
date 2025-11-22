@@ -2,7 +2,7 @@
 //
 //     Filename: SecurityFilterChainConfig.java
 //     Author: Kyle McColgan
-//     Date: 14 November 2025
+//     Date: 21 November 2025
 //     Description: This file implements a custom Security FilterChain configuration.
 //
 //***************************************************************************************
@@ -30,7 +30,7 @@ public class SecurityFilterChainConfig
     {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/register").permitAll()
                         .anyRequest().authenticated()
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))

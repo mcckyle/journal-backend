@@ -2,14 +2,12 @@
 //
 //     Filename: JwtAuthenticationFilter.java
 //     Author: Kyle McColgan
-//     Date: 14 November 2025
+//     Date: 21 November 2025
 //     Description: This file provides the auth token validation implementation.
 //
 //***************************************************************************************
 
 package mcckyle.gratitudejournal.gratitudejournal.security;
-
-//***************************************************************************************
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -45,9 +43,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
     {
         String authHeader = request.getHeader("Authorization");
 
-        if (authHeader != null && authHeader.startsWith("Bearer "))
+        if ( (authHeader != null) && (authHeader.startsWith("Bearer ")) )
         {
-            String jwt = authHeader.substring(7); // Remove "Bearer " prefix
+            String jwt = authHeader.substring(7); // Remove the "Bearer " prefix.
 
             if (jwtUtils.validateJwtToken(jwt))
             {
@@ -56,18 +54,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
 
                 if ( (userId != null) && ( SecurityContextHolder.getContext().getAuthentication() == null) )
                 {
-                    // Use UserDetailsService to load user details
-                    UserDetails userDetails = userDetailsService.loadUserById(userId);
+                    try
+                    {
+                        // Use UserDetailsService to load user details
+                        UserDetails userDetails = userDetailsService.loadUserById(userId);
 
-                    // Create authentication token and set it in the context
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                        // Create authentication token and set it in the context
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
+                    catch (org.springframework.security.core.userdetails.UsernameNotFoundException e)
+                    {
+                        //Redirect the user to the registration page if not found.
+                        response.sendRedirect("/register");
+                        return; //Stop further filter processing.
+                    }
                 }
             }
             else
             {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Token is invalid or expired");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Token is invalid or expired.");
                 return;
             }
         }

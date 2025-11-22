@@ -1,4 +1,4 @@
-![Build Status](https://github.com/kmccol1/journal-backend/actions/workflows/journal-tests-ci.yml/badge.svg)
+![Build Status](https://github.com/mcckyle/journal-backend/actions/workflows/journal-tests-ci.yml/badge.svg)
 
 # Gratitude Journal Backend
 
