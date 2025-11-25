@@ -17,6 +17,7 @@ repositories {
 	mavenCentral()
 }
 
+//Switch to PostgreSQL for deployment-related purposes.
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -25,13 +26,14 @@ dependencies {
 	implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
-	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'  // Add JWT dependency for token generation and parsing
-	implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.0'
-	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'  // Add JWT dependency for token generation and parsing.
+    implementation 'org.postgresql:postgresql'
+	//implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.0'
+	//runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
-	testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'  // Ensure JUnit 5 is used
-	testImplementation 'org.mockito:mockito-core:5.+' // Use the latest version
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'  // Ensure JUnit 5 is used.
+	testImplementation 'org.mockito:mockito-core:5.+' // Use the latest version.
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 

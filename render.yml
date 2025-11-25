@@ -5,19 +5,9 @@ services:
     dockerfilePath: Dockerfile
     repo: https://github.com/mcckyle/journal-backend
     branch: deploy
-    buildCommand: ./gradlew build
-    startCommand: java -jar build/libs/app.jar
+
     envVars:
       - key: JOURNAL_TOKEN
         sync: true
-      - key: DB_HOST
-      - key: DB_PORT
-      - key: DB_NAME
-      - key: DB_USERNAME
-      - key: DB_PASSWORD
-
-databases:
-  - name: gratitude-journal-db
-    type: mariadb
-    version: "10.4"
-    plan: free
+      - key: SUPABASE_DB_URL
+        sync: true
