@@ -2,7 +2,7 @@
 //
 //     Filename: JwtUtils.java
 //     Author: Kyle McColgan
-//     Date: 14 November 2025
+//     Date: 27 November 2025
 //     Description: This file contains the auth token generation process.
 //
 //***************************************************************************************
@@ -16,6 +16,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 import java.util.Collection;
 import java.util.Date;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 //***************************************************************************************
@@ -36,13 +37,30 @@ public class JwtUtils
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
+        String jti = UUID.randomUUID().toString(); //Add unique identifier.
+
         return Jwts.builder()
+                .setIssuer("gratitudejournal")
+                .setAudience("gratitudejournal-client")
+                .setId(jti)
                 .setSubject(String.valueOf(userId))
                 .claim("username", username)  // Include userId in the JWT
                 .claim("roles", roles)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
-                .signWith(Keys.hmacShaKeyFor(jwtSecret.getBytes()))
+                .signWith(Keys.hmacShaKeyFor(jwtSecret.getBytes()), SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    public String generateRefreshToken(Integer userId)
+    {
+        return Jwts.builder()
+                .setIssuer("gratitudejournal")
+                .setAudience("gratitudejournal-client")
+                .setSubject(String.valueOf(userId))
+                .setIssuedAt(new Date())
+                .setExpiration(new Date((new Date()).getTime() + 604800000)) //One week.
+                .signWith(Keys.hmacShaKeyFor(jwtSecret.getBytes()), SignatureAlgorithm.HS512)
                 .compact();
     }
 
@@ -51,6 +69,8 @@ public class JwtUtils
         try
         {
             return Jwts.parserBuilder()
+                    .requireIssuer("gratitudejournal")
+                    .requireAudience("gratitudejournal-client")
                     .setSigningKey(Keys.hmacShaKeyFor(jwtSecret.getBytes()))
                     .build()
                     .parseClaimsJws(token)

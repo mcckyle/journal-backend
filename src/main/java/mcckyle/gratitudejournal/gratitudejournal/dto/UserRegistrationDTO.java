@@ -2,8 +2,8 @@
 //
 //     Filename: UserRegistrationDTO.java
 //     Author: Kyle McColgan
-//     Date: 03 December 2024
-//     Description: This file holds uer related information in an object.
+//     Date: 26 November 2025
+//     Description: This file holds user related information in an object.
 //
 //***************************************************************************************
 
@@ -11,10 +11,22 @@ package mcckyle.gratitudejournal.gratitudejournal.dto;
 
 //***************************************************************************************
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public class UserRegistrationDTO
 {
+    @NotBlank
+    @Size(max = 50)
     private String username;
+
+    @NotBlank
+    @Email
     private String email;
+
+    @NotBlank
+    @Size(min = 8, max = 64)
     private String password;
 
     // Default constructor

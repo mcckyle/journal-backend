@@ -2,7 +2,7 @@
 //
 //     Filename: JwtAuthenticationFilter.java
 //     Author: Kyle McColgan
-//     Date: 21 November 2025
+//     Date: 28 November 2025
 //     Description: This file provides the auth token validation implementation.
 //
 //***************************************************************************************
@@ -28,13 +28,23 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter
 {
     private final JwtUtils jwtUtils;
-    private final UserDetailsServiceImpl userDetailsService; // Change to UserDetailsService
+    private final UserDetailsServiceImpl userDetailsService;
 
     @Autowired
     public JwtAuthenticationFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService)
     {
         this.jwtUtils = jwtUtils;
         this.userDetailsService = userDetailsService; // Inject UserDetailsServiceImpl bean
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+
+        //Skip only register / signin / refresh endpoints.
+        return path.equals("/api/auth/signin")
+                || path.equals("/api/auth/register")
+                || path.equals("/api/auth/refresh");
     }
 
     @Override
@@ -50,7 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
             if (jwtUtils.validateJwtToken(jwt))
             {
                 Integer userId = jwtUtils.getUserIdFromJwtToken(jwt);
-                System.out.println("Token validated, userId: " + userId);
+                //System.out.println("Token validated, userId: " + userId);
 
                 if ( (userId != null) && ( SecurityContextHolder.getContext().getAuthentication() == null) )
                 {
@@ -60,25 +70,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
                         UserDetails userDetails = userDetailsService.loadUserById(userId);
 
                         // Create authentication token and set it in the context
-                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                                userDetails, null, userDetails.getAuthorities());
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                        UsernamePasswordAuthenticationToken token =
+                                new UsernamePasswordAuthenticationToken(
+                                        userDetails, null, userDetails.getAuthorities());
+
+                        SecurityContextHolder.getContext().setAuthentication(token);
                     }
                     catch (org.springframework.security.core.userdetails.UsernameNotFoundException e)
                     {
-                        //Redirect the user to the registration page if not found.
-                        response.sendRedirect("/register");
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User not found. Please log in again.");
                         return; //Stop further filter processing.
                     }
                 }
             }
             else
             {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Token is invalid or expired.");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access token is invalid or expired.");
                 return;
             }
         }
 
+        //Continue filter chain...
         filterChain.doFilter(request, response);
     }
 }
