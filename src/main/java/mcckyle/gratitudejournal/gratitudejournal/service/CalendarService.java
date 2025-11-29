@@ -2,7 +2,7 @@
 //
 //   Filename: CalendarService.java
 //   Author: Kyle McColgan
-//   Date: 10 November 2025
+//   Date: 26 November 2025
 //   Description: This file provides abstracted functionality for the CalendarEntry.
 //
 //***************************************************************************************
@@ -38,11 +38,11 @@ public class CalendarService
 
     public CalendarEntry createEntry(CalendarEntry entry)
     {
-        if (entry.getTitle() == null || entry.getTitle().trim().isEmpty())
+        if ( (entry.getTitle() == null) || (entry.getTitle().trim().isEmpty()) )
         {
             throw new IllegalArgumentException("Title cannot be empty");
         }
-        if (entry.getContent() == null || entry.getContent().trim().isEmpty())
+        if ( (entry.getContent()) == null || (entry.getContent().trim().isEmpty()) )
         {
             throw new IllegalArgumentException("Content cannot be empty");
         }
@@ -50,25 +50,23 @@ public class CalendarService
         {
             throw new IllegalArgumentException("Entry date cannot be null");
         }
+
         return calendarEntryRepository.save(entry);
     }
 
-    public CalendarEntry updateEntry(Integer id, CalendarEntry entry)
+    public CalendarEntry updateEntry(Integer userId, Integer id, CalendarEntry changes)
     {
-        // Check if the entry exists
-        Optional<CalendarEntry> existingEntry = calendarEntryRepository.findById(id);
-        if (existingEntry.isPresent())
-        {
-            CalendarEntry entryToUpdate = existingEntry.get();
+        // Check if the entry exists.
+        CalendarEntry existingEntry = calendarEntryRepository.findByUserIdAndId(userId, id)
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Entry not found"));
 
-            // Update the entry fields
-            entryToUpdate.setTitle(entry.getTitle());
-            entryToUpdate.setContent(entry.getContent());
+        // Update the entry fields.
+        existingEntry.setTitle(changes.getTitle());
+        existingEntry.setContent(changes.getContent());
 
-            // Save and return the updated entry
-            return calendarEntryRepository.save(entryToUpdate);
-        }
-        return null;  // Return null if entry not found
+        // Save and return the updated entry.
+        return calendarEntryRepository.save(existingEntry);
     }
 
     public Optional<CalendarEntry> getEntryById(Integer userId, Integer entryId)
@@ -77,13 +75,14 @@ public class CalendarService
         return calendarEntryRepository.findByUserIdAndId(userId, entryId);
     }
 
-    public void deleteEntry (Integer id)
+    public void deleteEntry (Integer userId, Integer id)
     {
-        if (!calendarEntryRepository.existsById(id))
-        {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Calendar entry not found");
-        }
-        calendarEntryRepository.deleteById(id);
+        // Check if the entry exists.
+        CalendarEntry existingEntry = calendarEntryRepository.findByUserIdAndId(userId, id)
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Entry not found"));
+
+        calendarEntryRepository.delete(existingEntry);
     }
 }
 

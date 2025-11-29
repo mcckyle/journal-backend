@@ -2,7 +2,7 @@
 //
 //     Filename: UserAuthenticationDTO.java
 //     Author: Kyle McColgan
-//     Date: 03 December 2024
+//     Date: 26 November 2025
 //     Description: This file provides an authentication object representation.
 //
 //***************************************************************************************
@@ -11,9 +11,17 @@ package mcckyle.gratitudejournal.gratitudejournal.dto;
 
 //***************************************************************************************
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public class UserAuthenticationDTO
 {
+    @NotBlank
+    @Size(max = 50)
     private String username;
+
+    @NotBlank
+    @Size(min = 8, max = 64)
     private String password;
 
     public UserAuthenticationDTO() {}

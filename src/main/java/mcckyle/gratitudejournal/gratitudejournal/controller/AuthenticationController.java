@@ -2,28 +2,36 @@
 //
 //   Filename: AuthenticationController.java
 //   Author: Kyle McColgan
-//   Date: 21 November 2025
+//   Date: 28 November 2025
 //   Description: This file provides register and login functionality.
 //
 //***************************************************************************************
 
 package mcckyle.gratitudejournal.gratitudejournal.controller;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import mcckyle.gratitudejournal.gratitudejournal.dto.UserAuthenticationDTO;
 import mcckyle.gratitudejournal.gratitudejournal.dto.UserRegistrationDTO;
 import mcckyle.gratitudejournal.gratitudejournal.model.User;
-import mcckyle.gratitudejournal.gratitudejournal.payload.JwtResponse;
 import mcckyle.gratitudejournal.gratitudejournal.security.UserDetailsImpl;
+import mcckyle.gratitudejournal.gratitudejournal.security.UserDetailsServiceImpl;
 import mcckyle.gratitudejournal.gratitudejournal.security.jwt.JwtUtils;
 import mcckyle.gratitudejournal.gratitudejournal.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,7 +42,6 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
 public class AuthenticationController
 {
     @Autowired
@@ -46,16 +53,19 @@ public class AuthenticationController
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private UserDetailsServiceImpl userDetailsService;
+
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody UserRegistrationDTO userRegistrationDTO)
+    public ResponseEntity<?> registerUser(@Valid @RequestBody UserRegistrationDTO userRegistrationDTO, HttpServletResponse response)
     {
         try
         {
-            // Register the user using UserService with the new DTO
+            // Register the user using UserService with the new DTO.
             User registeredUser = userService.registerUser(userRegistrationDTO);  // Pass DTO instead of RegisterRequest
 
-            // Generate the JWT immediately.
-            String jwt = jwtUtils.generateJwtToken(
+            // Generate the access token immediately.
+            String accessToken = jwtUtils.generateJwtToken(
                     registeredUser.getId(),
                     registeredUser.getUsername(),
                     registeredUser.getRoles().stream()
@@ -63,46 +73,90 @@ public class AuthenticationController
                             .collect(Collectors.toSet())
             );
 
+            String refreshToken = jwtUtils.generateRefreshToken(registeredUser.getId());
+
+            // Create and return the response.
+            ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
+                    .httpOnly(true)
+                    .secure(false) //turn off for localhost.
+                    .path("/")
+                    .maxAge(7 * 24 * 60 * 60) //One week.
+                    .sameSite("Lax") //Change from "Strict" for localhost.
+                    .build();
+
+            response.addHeader("Set-Cookie", cookie.toString());
+            response.addHeader("Access-Control-Expose-Headers", "Set-Cookie");
+
             return ResponseEntity.ok(Map.of(
-                    "token", jwt,
+                    "accessToken", accessToken,
                     "username", registeredUser.getUsername(),
                     "email", registeredUser.getEmail()
             ));
         }
         catch (RuntimeException e)
         {
-            e.printStackTrace(); // For debugging purposes
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("Registration error occurred: ", e.getMessage());
-            return ResponseEntity.badRequest().body(errorResponse);
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@RequestBody UserAuthenticationDTO authenticationDTO)
+    public ResponseEntity<?> authenticateUser(@RequestBody UserAuthenticationDTO authenticationDTO, HttpServletResponse response)
     {
-        // Authenticate the user using the provided credentials from DTO
+        // Authenticate the user using the provided credentials from DTO.
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authenticationDTO.getUsername(), authenticationDTO.getPassword()));
+                new UsernamePasswordAuthenticationToken(
+                        authenticationDTO.getUsername(),
+                        authenticationDTO.getPassword()
+                )
+        );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        // Get the user details (from UserAuthenticationService)
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        // Generate JWT token
-        String jwt = jwtUtils.generateJwtToken(userDetails.getId(), userDetails.getUsername(), userDetails.getAuthorities());
-
-        // Create and return JWT response
-        JwtResponse jwtResponse = new JwtResponse(
-                jwt,
+        // Generate the JWT token.
+        String accessToken = jwtUtils.generateJwtToken(
                 userDetails.getId(),
                 userDetails.getUsername(),
-                userDetails.getEmail(),
                 userDetails.getAuthorities()
         );
 
-        return ResponseEntity.ok(jwtResponse);
+        String refreshToken = jwtUtils.generateRefreshToken(userDetails.getId());
+
+        // Create and return the response.
+        ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
+                .httpOnly(true)
+                .secure(false) //turn off for localhost.
+                .path("/")
+                .maxAge(7 * 24 * 60 * 60) //One week.
+                .sameSite("Lax") //Change from "Strict" for localhost.
+                .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
+        response.addHeader("Access-Control-Expose-Headers", "Set-Cookie");
+
+        return ResponseEntity.ok(Map.of(
+                "accessToken", accessToken,
+                "username", userDetails.getUsername(),
+                "email", userDetails.getEmail()
+        ));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response)
+    {
+        // Create and return the response.
+        ResponseCookie clearCookie = ResponseCookie.from("refresh_token", "")
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("None")
+                .path("/")
+                .maxAge(0) //Expires immediately.
+                .build();
+
+        response.addHeader("Set-Cookie", clearCookie.toString());
+        response.addHeader("Access-Control-Expose-Headers", "Set-Cookie");
+
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/validate")
@@ -134,7 +188,7 @@ public class AuthenticationController
 
             // Verify user still exists in DB.
             boolean userExists = userService.findById(userId).isPresent();
-            if (!userExists)
+            if ( ! userExists)
             {
                 return ResponseEntity.status(404).body(Map.of("valid", false, "error", "User not found."));
             }
@@ -145,6 +199,39 @@ public class AuthenticationController
         {
             return ResponseEntity.status(500).body(Map.of("valid", false, "error", "Server error: " + e.getMessage()));
         }
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response)
+    {
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies == null)
+        {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String refreshToken = Arrays.stream(cookies)
+                .filter(c -> c.getName().equals("refresh_token"))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
+
+        if ( (refreshToken == null) || ( ! jwtUtils.validateJwtToken(refreshToken)) )
+        {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Integer userId = jwtUtils.getUserIdFromJwtToken(refreshToken);
+        UserDetails userDetails = userDetailsService.loadUserById(userId);
+
+        String newAccessToken = jwtUtils.generateJwtToken(
+                userId,
+                userDetails.getUsername(),
+                userDetails.getAuthorities()
+        );
+
+        return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
     }
 
     @GetMapping("/me")

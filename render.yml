@@ -1,0 +1,15 @@
+services:
+  - name: gratitude-journal-api
+    type: web_service
+    env: docker
+    dockerfilePath: Dockerfile
+    repo: https://github.com/mcckyle/journal-backend
+    branch: deploy
+
+    envVars:
+      - key: JOURNAL_TOKEN
+        sync: true
+      - key: SUPABASE_DB_URL
+        sync: true
+      - key: DB_PASSWORD
+        sync: true

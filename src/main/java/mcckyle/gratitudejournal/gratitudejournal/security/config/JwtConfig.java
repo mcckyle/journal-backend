@@ -2,7 +2,7 @@
 //
 //     Filename: JwtConfig.java
 //     Author: Kyle McColgan
-//     Date: 02 December 2024
+//     Date: 26 November 2025
 //     Description: This file contains the token configuration.
 //
 //***************************************************************************************
@@ -26,7 +26,6 @@ public class JwtConfig
         this.jwtUtils = jwtUtils;
         this.userService = userService;
     }
-
 }
 
 //***************************************************************************************
