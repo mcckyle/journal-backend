@@ -2,7 +2,7 @@
 //
 //   Filename: AuthenticationController.java
 //   Author: Kyle McColgan
-//   Date: 28 November 2025
+//   Date: 29 November 2025
 //   Description: This file provides register and login functionality.
 //
 //***************************************************************************************
@@ -78,7 +78,7 @@ public class AuthenticationController
             // Create and return the response.
             ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
                     .httpOnly(true)
-                    .secure(false) //turn off for localhost.
+                    .secure(true) //true for production.
                     .path("/")
                     .maxAge(7 * 24 * 60 * 60) //One week.
                     .sameSite("Lax") //Change from "Strict" for localhost.
@@ -125,7 +125,7 @@ public class AuthenticationController
         // Create and return the response.
         ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true)
-                .secure(false) //turn off for localhost.
+                .secure(true) //true for production.
                 .path("/")
                 .maxAge(7 * 24 * 60 * 60) //One week.
                 .sameSite("Lax") //Change from "Strict" for localhost.
@@ -148,9 +148,9 @@ public class AuthenticationController
         ResponseCookie clearCookie = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
                 .secure(false)
-                .sameSite("None")
+                .sameSite("Lax") // MUST MATCH LOGIN.
                 .path("/")
-                .maxAge(0) //Expires immediately.
+                .maxAge(0) //Expires immediately, delete it.
                 .build();
 
         response.addHeader("Set-Cookie", clearCookie.toString());

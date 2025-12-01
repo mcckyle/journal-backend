@@ -2,7 +2,7 @@
 //
 //     Filename: CalendarServiceTest.java
 //     Author: Kyle McColgan
-//     Date: 21 November 2025
+//     Date: 30 November 2025
 //     Description: This file contains unit tests for the CalendarService.
 //
 //***************************************************************************************
@@ -27,7 +27,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -96,15 +95,15 @@ public class CalendarServiceTest
     @Test
     void testDeleteEntry()
     {
-        // Mock repository.existsById to return true
-        when(repository.existsById(1)).thenReturn(true);
+        // Mock findByUserIDAndId to return a sample entry.
+        when(repository.findByUserIdAndId(1,1)).thenReturn(Optional.of(sampleEntry));
 
-        // Call deleteEntry method
-        service.deleteEntry(1);
+        // Call the deleteEntry() method.
+        service.deleteEntry(1, 1);
 
-        // Verify repository methods are called with the correct parameters
-        verify(repository).existsById(1);  // Ensure existsById was invoked
-        verify(repository).deleteById(1);  // Ensure deleteById was invoked
+        //Verify repository methods are called with the correct parameters.
+        verify(repository).findByUserIdAndId(1, 1);  // Ensure existsById was invoked.
+        verify(repository).delete(sampleEntry);  // Ensure deleteById was invoked.
     }
 
     // Test 5: Service - Update entry
@@ -116,11 +115,16 @@ public class CalendarServiceTest
         updatedEntry.setTitle("Updated Title");
         updatedEntry.setContent("Updated Content");
 
-        when(repository.findById(1)).thenReturn(Optional.of(sampleEntry));
-        when(repository.save(any(CalendarEntry.class))).thenReturn(updatedEntry);
+        when(repository.findByUserIdAndId(1, 101)).thenReturn(Optional.of(sampleEntry));
+        when(repository.save(sampleEntry)).thenReturn(sampleEntry);
 
-        CalendarEntry result = service.updateEntry(1, updatedEntry);
+        CalendarEntry result = service.updateEntry(1, 101, updatedEntry);
+
         assertThat(result.getTitle()).isEqualTo("Updated Title");
+        assertThat(result.getContent()).isEqualTo("Updated Content");
+
+        verify(repository).findByUserIdAndId(1, 101);
+        verify(repository).save(sampleEntry);
     }
 
     // Test 6: Edge Case - Save entry with null fields
@@ -140,12 +144,13 @@ public class CalendarServiceTest
         updatedEntry.setTitle("Non-existent");
         updatedEntry.setContent("Content");
 
-        when(repository.findById(999)).thenReturn(Optional.empty());
+        when(repository.findByUserIdAndId(999, 101)).thenReturn(Optional.empty());
 
-        CalendarEntry result = service.updateEntry(999, updatedEntry);
+        assertThatThrownBy(() -> service.updateEntry(999, 101, updatedEntry))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Calendar entry not found");
 
-        assertThat(result).isNull(); //Should return null if the entry does not exist.
-        verify(repository).findById(999);
+        verify(repository).findByUserIdAndId(999, 101);
     }
 
     //Test #8: Delete Non-existent Entry. - Ensure That Attempting to Delete
@@ -153,13 +158,15 @@ public class CalendarServiceTest
     @Test
     void testDeleteNonExistentEntry()
     {
-        when(repository.existsById(999)).thenReturn(false);
+        //Mock the findByUserIdAndId() to return empty.
+        when(repository.findByUserIdAndId(999, 101)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.deleteEntry(999))
+        //Assert the exception.
+        assertThatThrownBy(() -> service.deleteEntry(999, 101))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("Calendar entry not found");
 
-        verify(repository).existsById(999);
+        verify(repository).findByUserIdAndId(999, 101);
     }
 
     //Test #9: Get Entries For User With No Entries. -

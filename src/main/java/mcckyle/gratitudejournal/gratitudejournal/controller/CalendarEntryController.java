@@ -2,7 +2,7 @@
 //
 //     Filename: CalendarEntryController.java
 //     Author: Kyle McColgan
-//     Date: 26 November 2025
+//     Date: 1 December 2025
 //     Description: This controller class provides CalendarEntry functionality.
 //
 //***************************************************************************************
@@ -83,6 +83,13 @@ public class CalendarEntryController
     {
         try
         {
+            //FIRST: validate DTO (test #9 depends on this).
+            if ( (dto == null) || (dto.entryDate == null) )
+            {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+
+            //THEN: validate authentication.
             if ( (authentication == null) || ( ! authentication.isAuthenticated()) )
             {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

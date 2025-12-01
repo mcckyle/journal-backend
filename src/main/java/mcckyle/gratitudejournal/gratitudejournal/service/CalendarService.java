@@ -59,7 +59,7 @@ public class CalendarService
         // Check if the entry exists.
         CalendarEntry existingEntry = calendarEntryRepository.findByUserIdAndId(userId, id)
                 .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Entry not found"));
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Calendar entry not found"));
 
         // Update the entry fields.
         existingEntry.setTitle(changes.getTitle());
@@ -80,7 +80,7 @@ public class CalendarService
         // Check if the entry exists.
         CalendarEntry existingEntry = calendarEntryRepository.findByUserIdAndId(userId, id)
                 .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Entry not found"));
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Calendar entry not found"));
 
         calendarEntryRepository.delete(existingEntry);
     }

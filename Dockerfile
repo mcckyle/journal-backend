@@ -16,4 +16,4 @@ COPY --from=builder /app/build/libs/*.jar app.jar
 EXPOSE 8080
 
 # Make sure to set the right JVM memory flags for the Render free tier.
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Xmx512m", "-Dspring.profiles.active=prod", "-jar", "app.jar"]

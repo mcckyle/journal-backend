@@ -28,6 +28,7 @@ public class CorsConfig
         CorsConfiguration corsConfig = new CorsConfiguration();
         corsConfig.setAllowedOriginPatterns(List.of(
                 "http://localhost:3000",
+                "https://mcckyle.github.io",
                 "https://journal-backend-vnla.onrender.com" //Replace with real URL.
         ));
         corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
