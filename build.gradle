@@ -6,6 +6,7 @@ plugins {
 
 group = 'mcckyle.gratitudejournal'
 version = '0.0.1-SNAPSHOT'
+description = 'Java Spring back end for the gratitude journal application.'
 
 java {
 	toolchain {
