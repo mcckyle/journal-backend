@@ -2,7 +2,10 @@
 FROM gradle:8.5-jdk17 AS builder
 WORKDIR /app
 COPY . .
-RUN gradle clean build -x test
+
+#Ensure Gradle wrapper is used and JVM memory is limited.
+ENV GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx512m"
+RUN ./gradlew clean build -x test --no-daemon
 
 # ----------- Stage 2: Run the JAR file. -----------
 # Use an official lightweight Java runtime.
