@@ -3,7 +3,10 @@ FROM gradle:8.5-jdk17 AS builder
 WORKDIR /app
 COPY . .
 
-#Ensure Gradle wrapper is used and JVM memory is limited.
+#Ensure gradlew is executable.
+RUN chmod +x gradlew
+
+#Limit Gradle JVM memory and build.
 ENV GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx512m"
 RUN ./gradlew clean build -x test --no-daemon
 
